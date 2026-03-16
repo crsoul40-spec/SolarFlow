@@ -1,1 +1,7 @@
 *_SolarQuote.txt
+SolarFlow.zip
+
+# PyInstaller
+build/
+dist/
+*.spec
