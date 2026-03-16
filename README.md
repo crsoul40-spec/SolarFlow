@@ -20,19 +20,27 @@ If you don't have Python, download it free from [python.org](https://www.python.
 
 ### Step 2: Run Your First Quote
 
-Open a terminal (Command Prompt on Windows, Terminal on Mac) and navigate to the SolarFlow folder:
+You have two options — a desktop GUI or a command-line tool. Both produce the same professional quote.
+
+**Option A: Desktop App (recommended)**
+
+Double-click or run:
 
 ```bash
-cd path/to/solarflow
+python SolarFlow_App.py
 ```
 
-Run the quote builder:
+A window will open with labeled input fields. Fill them in, click **"Generate Professional Quote"**, and your quote is saved.
+
+**Option B: Command Line**
 
 ```bash
 python quote_builder.py
 ```
 
-The script will walk you through entering the customer's details. Your finished quote will be saved as `[CustomerName]_SolarQuote.txt` in the same folder.
+The script will walk you through entering the customer's details in the terminal.
+
+Both save your finished quote as `[CustomerName]_SolarQuote.txt` in the same folder.
 
 ### Step 3: Send Your First Follow-Up Email
 
@@ -45,7 +53,21 @@ That's it. You're running SolarFlow.
 
 ---
 
-## Using the Quote Builder (`quote_builder.py`)
+## Using the Desktop App (`SolarFlow_App.py`)
+
+The desktop app is the easiest way to generate quotes. Launch it with:
+
+```bash
+python SolarFlow_App.py
+```
+
+A professional window opens with labeled fields for all inputs. Fill in the customer details, system specs, and financing terms, then click **"Generate Professional Quote."** The app validates your entries, runs the calculations, saves the quote file, and shows a success message with the key numbers.
+
+The app uses the same accounting logic as the command-line tool — same ITC calculation, same PMT formula, same output file.
+
+---
+
+## Using the Command-Line Tool (`quote_builder.py`)
 
 ### What It Does
 
@@ -128,7 +150,8 @@ Run through this checklist every morning before you start driving to job sites:
 
 ```
 solarflow/
-├── quote_builder.py       # Quote generation script
+├── SolarFlow_App.py       # Desktop GUI application
+├── quote_builder.py       # Command-line quote tool
 ├── EMAIL_TEMPLATES.md     # 5 follow-up email templates
 ├── PRODUCT_PAGE.md        # Product sales page (for your reference)
 └── README.md              # This file
@@ -138,7 +161,8 @@ solarflow/
 
 ## Requirements
 
-- Python 3.8+ (for the quote builder)
+- Python 3.8+ (for the quote builder and desktop app)
+- Tkinter (included with Python on Windows and Mac — Linux users may need `sudo apt install python3-tk`)
 - Any email client (Gmail, Outlook, Yahoo Mail, etc.)
 - No third-party Python packages required
 - Works on Windows, Mac, and Linux
