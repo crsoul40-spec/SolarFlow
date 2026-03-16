@@ -12,7 +12,7 @@ The proposal sat in a Gmail draft. The financing options were never explained. T
 
 ## SolarFlow Fixes That in 15 Minutes
 
-SolarFlow is a done-for-you sales operations kit built specifically for US residential solar contractors and small installation companies. No CRM subscriptions. No software to learn. Just a Python-powered quote builder, five proven email templates, and a repeatable system you set up once and run every single day.
+SolarFlow is a done-for-you sales operations kit built specifically for US residential solar contractors and small installation companies. No CRM subscriptions. No software to learn. Just a professional desktop app, a command-line quote builder, five proven email templates, and a repeatable system you set up once and run every single day.
 
 **Install it in 15 minutes. Start recovering revenue today.**
 
@@ -20,8 +20,11 @@ SolarFlow is a done-for-you sales operations kit built specifically for US resid
 
 ## What's Inside the Package
 
-### Quote Builder Script (`quote_builder.py`)
-A lightweight Python tool that generates professional, branded solar proposals in seconds. Input the system size, panel count, and customer details—get a clean, print-ready quote with:
+### Desktop App (`SolarFlow_App.py`)
+A clean, professional GUI built for contractors who don't want to touch a terminal. Open the app, fill in the fields, click one button — your quote is generated instantly. White interface with solar-industry blue accents. No training required.
+
+### Command-Line Tool (`quote_builder.py`)
+Prefer the terminal? The command-line version walks you through each input and produces the same professional quote. Input the system size, panel count, and customer details — get a clean, print-ready quote with:
 
 - Gross system cost calculation
 - Federal Investment Tax Credit (ITC) estimate at 30%
@@ -29,7 +32,7 @@ A lightweight Python tool that generates professional, branded solar proposals i
 - Estimated monthly payment at configurable financing terms
 - Estimated annual energy production and savings
 
-No spreadsheet errors. No copy-paste mistakes. Just accurate quotes, every time.
+No spreadsheet errors. No copy-paste mistakes. Just accurate quotes, every time. Two ways to generate — pick whichever fits your workflow.
 
 ### 5 Revenue-Recovery Email Templates
 The exact follow-up sequence that separates closing contractors from quoting contractors:
@@ -72,7 +75,8 @@ You're not buying a tool. You're plugging a hole in your revenue pipeline.
 
 | Item | Format |
 |------|--------|
-| Quote Builder Script | Python (.py) — runs on any computer |
+| Desktop App | Python (.py) — professional GUI, click and generate |
+| Command-Line Tool | Python (.py) — terminal-based, same output |
 | 5 Email Templates | Markdown (.md) — copy, paste, personalize |
 | Quick Start Guide | README (.md) — set up in 15 minutes |
 | Daily Workflow Checklist | Included in README |
