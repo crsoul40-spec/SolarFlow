@@ -2,39 +2,38 @@
 SolarFlow Quote Builder
 =======================
 Generates professional residential solar proposals from the command line.
-No external dependencies — runs on Python 3.8+ standard library only.
+No external dependencies -- runs on Python 3.8+ standard library only.
+
+PMT Formula:  P = r(PV) / (1 - (1 + r)^-n)
 """
 
-import math
-import os
 import re
 import sys
 from datetime import datetime
 
 
 # ---------------------------------------------------------------------------
-# Configuration — edit these defaults to match your company
+# Configuration -- edit these defaults to match your company
 # ---------------------------------------------------------------------------
 COMPANY_NAME = "Your Solar Company"
 COMPANY_PHONE = "(555) 000-0000"
 COMPANY_EMAIL = "info@yourcompany.com"
 COMPANY_WEBSITE = "www.yourcompany.com"
 
-ITC_RATE = 0.30            # Federal Investment Tax Credit (30% through 2032)
-DEFAULT_COST_PER_WATT = 3.00
-DEFAULT_FINANCING_TERM = 240   # months
-DEFAULT_FINANCING_APR = 5.99   # percent
-DEFAULT_UTILITY_RATE = 0.13    # $/kWh
-PANEL_WATTAGE = 400            # watts per panel (used for estimate display)
+ITC_RATE = 0.30               # Federal Investment Tax Credit (30% through 2032)
+DEFAULT_COST_PER_WATT = 3.00  # $/watt
+DEFAULT_FINANCING_TERM = 240  # months (20 years)
+DEFAULT_FINANCING_APR = 5.99  # percent
+DEFAULT_UTILITY_RATE = 0.13   # $/kWh
+PANEL_WATTAGE = 400           # watts per panel (used for display)
 SYSTEM_WARRANTY_YEARS = 25
-OUTPUT_DIR = "quotes"
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def prompt(label: str, default=None, cast=str, required=True) -> object:
+def prompt(label, default=None, cast=str):
     """Prompt the user for input with optional default and type casting."""
     suffix = f" [{default}]" if default is not None else ""
     while True:
@@ -42,48 +41,55 @@ def prompt(label: str, default=None, cast=str, required=True) -> object:
         if not raw and default is not None:
             raw = str(default)
         if not raw:
-            if required:
-                print("    * This field is required.")
-                continue
-            return None
+            print("    * This field is required.")
+            continue
         try:
             return cast(raw)
         except (ValueError, TypeError):
-            print(f"    * Invalid input. Expected {cast.__name__}.")
+            print(f"    * Invalid input. Please enter a valid {cast.__name__}.")
 
 
-def currency(value: float) -> str:
+def currency(value):
     """Format a number as US currency."""
     return f"${value:,.2f}"
 
 
-def sanitize_filename(name: str) -> str:
-    """Turn a customer name into a safe filename fragment."""
-    return re.sub(r"[^a-zA-Z0-9]+", "_", name).strip("_").lower()
+def make_filename(customer_name):
+    """Turn 'Jane Smith' into 'JaneSmith_SolarQuote.txt'."""
+    cleaned = re.sub(r"[^a-zA-Z0-9]", "", customer_name)
+    return f"{cleaned}_SolarQuote.txt"
 
 
-def calculate_monthly_payment(principal: float, annual_rate: float, term_months: int) -> float:
-    """Standard amortization formula for fixed monthly payment."""
-    if annual_rate == 0:
+def calculate_monthly_payment(principal, annual_rate_pct, term_months):
+    """
+    Standard PMT / amortization formula:
+        P = r(PV) / (1 - (1 + r)^-n)
+
+    Where:
+        PV = present value (loan principal)
+        r  = monthly interest rate (annual rate / 12)
+        n  = total number of monthly payments
+    """
+    if annual_rate_pct == 0:
         return principal / term_months
-    monthly_rate = annual_rate / 100 / 12
-    return principal * (monthly_rate * (1 + monthly_rate) ** term_months) / \
-           ((1 + monthly_rate) ** term_months - 1)
+    r = annual_rate_pct / 100 / 12
+    return (r * principal) / (1 - (1 + r) ** -term_months)
 
 
 # ---------------------------------------------------------------------------
 # Input collection
 # ---------------------------------------------------------------------------
 
-def collect_inputs() -> dict:
+def collect_inputs():
     """Walk the user through every input field and return a dict."""
-    print("\n" + "=" * 60)
+    print()
+    print("=" * 60)
     print("  SOLARFLOW QUOTE BUILDER")
     print("=" * 60)
 
     print("\n-- Customer Information --")
-    customer_name = prompt("Customer name", cast=str)
-    address = prompt("Property address", cast=str)
+    customer_name = prompt("Customer name")
+    address = prompt("Street address")
 
     print("\n-- System Design --")
     system_kw = prompt("System size (kW)", cast=float)
@@ -93,10 +99,10 @@ def collect_inputs() -> dict:
     cost_per_watt = prompt("Cost per watt ($)", default=DEFAULT_COST_PER_WATT, cast=float)
 
     print("\n-- Energy Production --")
-    annual_kwh = prompt("Estimated annual production (kWh)", cast=float)
-    utility_rate = prompt("Customer utility rate ($/kWh)", default=DEFAULT_UTILITY_RATE, cast=float)
+    annual_kwh = prompt("Annual energy production (kWh)", cast=float)
+    utility_rate = prompt("Utility rate ($/kWh)", default=DEFAULT_UTILITY_RATE, cast=float)
 
-    print("\n-- Financing --")
+    print("\n-- Financing Terms --")
     term_months = prompt("Loan term (months)", default=DEFAULT_FINANCING_TERM, cast=int)
     apr = prompt("Loan APR (%)", default=DEFAULT_FINANCING_APR, cast=float)
 
@@ -117,13 +123,15 @@ def collect_inputs() -> dict:
 # Calculations
 # ---------------------------------------------------------------------------
 
-def calculate(data: dict) -> dict:
+def calculate(data):
     """Derive every output number from the raw inputs."""
     gross_cost = data["system_kw"] * data["cost_per_watt"] * 1000
     itc_amount = gross_cost * ITC_RATE
     net_cost = gross_cost - itc_amount
 
-    monthly_payment = calculate_monthly_payment(net_cost, data["apr"], data["term_months"])
+    monthly_payment = calculate_monthly_payment(
+        net_cost, data["apr"], data["term_months"]
+    )
     total_financed = monthly_payment * data["term_months"]
     total_interest = total_financed - net_cost
 
@@ -156,7 +164,7 @@ def calculate(data: dict) -> dict:
 # Quote rendering
 # ---------------------------------------------------------------------------
 
-def render_quote(q: dict) -> str:
+def render_quote(q):
     """Build the full text of the proposal."""
     divider = "=" * 60
     thin = "-" * 60
@@ -164,7 +172,7 @@ def render_quote(q: dict) -> str:
     lines = [
         divider,
         f"  {COMPANY_NAME}".center(60),
-        f"  Solar Energy Proposal".center(60),
+        "  Solar Energy Proposal".center(60),
         divider,
         "",
         f"  Prepared for:   {q['customer_name']}",
@@ -255,41 +263,6 @@ def render_quote(q: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# File output
-# ---------------------------------------------------------------------------
-
-def save_quote(text: str, customer_name: str) -> str:
-    """Write the proposal to a text file and return the path."""
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    date_stamp = datetime.now().strftime("%Y%m%d")
-    filename = f"quote_{sanitize_filename(customer_name)}_{date_stamp}.txt"
-    filepath = os.path.join(OUTPUT_DIR, filename)
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(text)
-    return filepath
-
-
-# ---------------------------------------------------------------------------
-# Console summary
-# ---------------------------------------------------------------------------
-
-def print_summary(q: dict) -> None:
-    """Print a compact summary to the terminal after generation."""
-    print("\n" + "-" * 60)
-    print("  QUOTE SUMMARY")
-    print("-" * 60)
-    print(f"  Customer:         {q['customer_name']}")
-    print(f"  System:           {q['system_kw']:.2f} kW  ({q['num_panels']} panels)")
-    print(f"  Gross cost:       {currency(q['gross_cost'])}")
-    print(f"  ITC ({q['itc_rate_pct']}%):         -{currency(q['itc_amount'])}")
-    print(f"  Net cost:         {currency(q['net_cost'])}")
-    print(f"  Monthly payment:  {currency(q['monthly_payment'])}/mo")
-    print(f"  Annual savings:   {currency(q['annual_savings'])}")
-    print(f"  Payback:          {q['payback_years']:.1f} years")
-    print("-" * 60)
-
-
-# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -302,10 +275,29 @@ def main():
 
     results = calculate(data)
     quote_text = render_quote(results)
-    filepath = save_quote(quote_text, data["customer_name"])
 
-    print_summary(results)
-    print(f"\n  Quote saved to: {filepath}")
+    # Save to [CustomerName]_SolarQuote.txt in the current directory
+    filename = make_filename(data["customer_name"])
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(quote_text)
+
+    # Print summary to terminal
+    print()
+    print("-" * 60)
+    print("  QUOTE SUMMARY")
+    print("-" * 60)
+    print(f"  Customer:         {results['customer_name']}")
+    print(f"  System:           {results['system_kw']:.2f} kW  ({results['num_panels']} panels)")
+    print(f"  Gross cost:       {currency(results['gross_cost'])}")
+    print(f"  ITC ({results['itc_rate_pct']}%):         -{currency(results['itc_amount'])}")
+    print(f"  Net cost:         {currency(results['net_cost'])}")
+    print(f"  Monthly payment:  {currency(results['monthly_payment'])}/mo")
+    print(f"  Annual savings:   {currency(results['annual_savings'])}")
+    print(f"  Payback:          {results['payback_years']:.1f} years")
+    print("-" * 60)
+
+    # Confirm file was saved
+    print(f"\n  Quote saved successfully to: {filename}")
     print("  Open the file and attach it to your proposal email.\n")
 
 

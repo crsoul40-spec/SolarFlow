@@ -32,7 +32,7 @@ Run the quote builder:
 python quote_builder.py
 ```
 
-The script will walk you through entering the customer's details. Your finished quote will be saved as a text file in the same folder.
+The script will walk you through entering the customer's details. Your finished quote will be saved as `[CustomerName]_SolarQuote.txt` in the same folder.
 
 ### Step 3: Send Your First Follow-Up Email
 
